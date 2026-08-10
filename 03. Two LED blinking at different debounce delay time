@@ -1,0 +1,54 @@
+/*
+Project: 1. Non-blocking series - Two LED blinking at different debounce delay time 
+Author: Harwell Mejia
+Hardware:
+- Arduino UNO x 1
+- Red LED x 2
+- 330 ohm resistor x 2
+Software: 
+- Arduino (C++)
+- Run and simulated in ThinkerCad*/
+
+#define	redPin 2
+#define	bluePin 3
+int redLedState = LOW;
+int blueLedState = LOW;
+
+//=== Non-blocking timer parameters ===
+unsigned long lastRedMillis = 0;       //Timer starting point
+const unsigned long redInterval = 500; //LED blinking debounce time
+
+unsigned long lastBlueMillis = 0;       //Timer starting point
+const unsigned long blueInterval = 250; //LED blinking debounce time
+
+void setup(){
+  Serial.begin(115200);
+  pinMode(redPin, OUTPUT);
+  pinMode(bluePin, OUTPUT);
+  
+  Serial.println("Welcome to Arduino - Non-blocking Programming");
+  Serial.println("03 - Two Blinking a LEDs");
+  Serial.println("By Harwell Mejia");
+  
+}
+void loop(){
+  
+  //===Non-blocking timer to replace the delay() function
+  unsigned long currentMillis = millis();
+  
+  if(currentMillis - lastRedMillis >= redInterval){
+    lastRedMillis += redInterval;
+    redLedState = (redLedState == LOW)? HIGH:LOW;
+    digitalWrite(redPin, redLedState);
+    Serial.print("Red LED state: ");
+    Serial.println(redLedState? "ON":"OFF");
+  }
+  
+  if(currentMillis - lastBlueMillis >= blueInterval){
+    lastBlueMillis += blueInterval;
+    blueLedState = (blueLedState == LOW)? HIGH:LOW;
+    digitalWrite(bluePin, blueLedState);
+    Serial.print("Blue LED state: ");
+    Serial.println(blueLedState? "ON":"OFF");
+  }
+}
