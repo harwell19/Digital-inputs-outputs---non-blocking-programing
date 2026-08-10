@@ -1,0 +1,52 @@
+/* 
+Project: Non-blocking programing Serie - Toggle Switch
+Author: Harwell Mejia
+Tutor: ChatGPT
+Features: 
+Non-blocking push button to turn ON/OFF a system or program
+Hardware:
+-Arduino UNO
+-Push button x 1
+*/
+
+#define switchPin 2
+
+//=== Global parameters===
+int lastReading = HIGH;
+int stableButtonState = HIGH;
+int systemState = LOW;
+//=== Non-blocking timer parameters ===
+unsigned long lastBounceTime = 0; // Timer starting point
+const unsigned long debounceDelay = 20; // checking time in millis
+
+void setup(){
+    Serial.begin(115200);
+    pinMode(switchPin, INPUT_PULLUP);
+    
+    Serial.println("Welcome to Arduino - Non-blocking Programming Serie");
+    Serial.println("04 - Toggle switch");
+    Serial.print("By Harwell Mejia");
+    }
+void loop(){
+    //=== Task 1 - Reading electric Signal ===
+    int currentReading = digitalRead(switchPin);
+    
+    //=== Task 2 - Detect electrical Change ===
+    if(currentReading != lastReading){
+        lastBounceTime = millis();
+        lastReading = currentReading;
+        }
+   //=== Task 3 - Check debounce time ===  
+    if(millis() - lastBounceTime >= debounceDelay){
+        
+        //=== Task 4 - Detect stable state change === 
+        if(currentReading != stableButtonState){
+            stableButtonState = currentReading;
+           
+            //=== Task 5 - Validate button press === 
+             if(stableButtonState == LOW){
+                systemState = !systemState;
+            }
+        }
+    }
+}
