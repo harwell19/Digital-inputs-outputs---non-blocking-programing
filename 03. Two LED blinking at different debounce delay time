@@ -1,5 +1,5 @@
 /*
-Project: 1. Non-blocking series - Two LED blinking at different debounce delay time 
+Project: 1. Non-blocking series - Asynchronous multi-tasking LEDs 
 Author: Harwell Mejia
 Hardware:
 - Arduino UNO x 1
