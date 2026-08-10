@@ -1,4 +1,4 @@
-# Digital-inputs-outputs---non-blocking-programing
+# Non-blocking-programing - Chapter 1: LEDs and Push Button
 ## Description
 ### This is the first chapter of a non-blocking programming course, in this folder, it will be include:
 ### 1-Controlling the blinking debounce time of a single LED
