@@ -18,7 +18,7 @@ const unsigned long blinkInterval = 500; //LED blinking debounce time
 
 void setup(){
   Serial.begin(115200);
-  pinMode(redPin, INPUT_PULLUP);
+  pinMode(redPin, OUTPUT);
   
   Serial.println("Welcome to Arduino - Non-blocking Programming");
   Serial.println("01- Blinking a LED");
