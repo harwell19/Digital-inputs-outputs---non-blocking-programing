@@ -1,0 +1,55 @@
+/*
+Project: 1. Non-blocking series - Dimmable LED 
+Author: Harwell Mejia
+Tutor: GEMINI
+Hardware:
+- Arduino UNO x 1
+- Red LED x 1
+- 330 ohm resistor x 1
+Software: 
+- Arduino (C++)
+- Run and simulated in ThinkerCad*/
+
+#define	redPin 3
+
+int brightness = 0;
+int fadeAmount = 10;
+
+//=== Non-blocking timer parameters ===
+unsigned long lastDimMillis = 0;       //Timer starting point
+const unsigned long dimInterval = 100; //LED blinking debounce time
+
+void setup(){
+  Serial.begin(115200);
+  pinMode(redPin, OUTPUT);
+  
+  Serial.println("Welcome to Arduino - Non-blocking Programming");
+  Serial.println("02 - Dimmable LED");
+  Serial.println("By Harwell Mejia");
+  
+}
+void loop(){
+  //===Non-blocking timer to replace the delay() function
+  unsigned long currentDimMillis = millis();
+  if(currentDimMillis - lastDimMillis >= dimInterval){
+    lastDimMillis += dimInterval;
+    
+    //Output current level to PWM pin
+    analogWrite(redPin, brightness);
+    //Increment/decrement brightness for the next step
+    brightness += fadeAmount;
+    
+    //Reverse direction when it get to 255 and 0
+    if(brightness <= 0 || brightness >= 255){
+      fadeAmount = -fadeAmount;
+      brightness = constrain(brightness, 0, 255);
+      //Force to jump from 5 to 0
+      if(brightness <= 5){
+        brightness = 0;
+      }
+    }
+   
+    Serial.print("LED Brightness: ");
+    Serial.println(brightness);
+  }
+}
