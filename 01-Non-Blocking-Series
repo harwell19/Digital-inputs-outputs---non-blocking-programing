@@ -1,1 +1,38 @@
 
+/*
+Project: 1. Non-blocking series - LED blink 
+Author: Harwell Mejia
+Hardware:
+- Arduino UNO x 1
+- Red LED x 1
+- 330 ohm resistor x 1
+Software: 
+- Arduino (C++)
+- Runned and simulated in ThinkerCad*/
+
+#define	redPin 2
+int redLedState = LOW;
+//=== Non-blocking timer parameters ===
+unsigned long lastBlinkMillis = 0;       //Timer starting point
+const unsigned long blinkInterval = 500; //LED blinking debounce time
+
+void setup(){
+  Serial.begin(115200);
+  pinMode(redPin, INPUT_PULLUP);
+  
+  Serial.println("Welcome to Arduino - Non-blocking Programming");
+  Serial.println("01- Blinking a LED");
+  Serial.println("By Harwell Mejia");
+  
+}
+void loop(){
+  //===Non-blocking timer to replace the delay() function
+  unsigned long currentBlinkMillis = millis();
+  if(currentBlinkMillis - lastBlinkMillis >= blinkInterval){
+    lastBlinkMillis += blinkInterval;
+    redLedState = (redLedState == LOW)? HIGH:LOW;
+    digitalWrite(redPin, redLedState);
+    Serial.print("Led State: ");
+    Serial.println(redLedState? "ON": "OFF");
+  }
+}
