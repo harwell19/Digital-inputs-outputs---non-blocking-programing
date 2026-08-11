@@ -5,7 +5,9 @@
 ### 2-Dimmable LED
 ### 3- Asynchronous blinking LEDs
 ### 4-Toggle switch 
-### 5-Multiple task: Toggle switch + LEDs
+### 5-Serial loop counter
+### 6-Asynchronous multitasking
+
 ## Objective
 ### Showing the fundation of non-blocking programming in order to achive multiple task without blocking the microcontroller 
 ## Learning notes: Use of "unsigned long" instead of "int" when using millis()
