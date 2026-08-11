@@ -1,0 +1,30 @@
+/*
+Project: 05 Non-blocking Programming - Serial Counter
+Author: Harwell Mejia
+Tutor: GEMINI
+Feature:
+Non-blocking printing in monitor
+Date: 2026/08/11*/
+
+unsigned long lastSerialMillis = 0;
+const unsigned long serialInterval = 2000; //Read every two seconds
+int Count = 0;
+
+void setup(){
+  Serial.begin(115200);
+  
+  Serial.println("Welcome to Arduino - Non blocking series");
+  Serial.println("Serial counter");
+  Serial.println("By Harwell");
+}
+
+void loop(){
+  unsigned long currentSerialMillis = millis();
+  Count++;
+  if (currentSerialMillis - lastSerialMillis >= serialInterval){
+    lastSerialMillis += serialInterval;
+    Serial.print("Count loop every 2 seconds: ");
+    Serial.println(Count);
+    Count = 0; 
+  }
+}
