@@ -1,0 +1,71 @@
+/*
+Project: 06- Non-blocking Programming:  Multitasking - Toggle+LEDs
+Author: Harwell Mejia
+Feature: 
+	- Non-blocking toggle
+    - LEDs to detremine system state (ON/OFF)
+Hardware:
+	- Arduino UNO
+    - Push button x 1
+    - LEDs x 2
+Software:
+Arduino (C++) - Run and simulated in ThinkerCad
+Date:2026/08/11*/
+
+#define switchPin 2  //Push button pin number
+#define redPin 3     // Red Led in pin 3
+#define greenPin 4   // Green led in pin 4
+
+//=== Global variables ===
+int systemState = LOW;   //Starting in OFF mode
+
+//=== Non blocking timer parameters ===
+unsigned long bounceSwitchTime = 0; //Timer starting point
+const unsigned long switchDebounceDelay = 50; //Debounce delay time
+int switchStableState = HIGH;
+int lastSwitchRead = HIGH;
+
+void setup(){
+  Serial.begin(115200);
+  pinMode(switchPin, INPUT_PULLUP);
+  pinMode(redPin, OUTPUT);
+  pinMode(greenPin, OUTPUT);
+  
+  Serial.println("\nWelcome to Arduino - Non Bolcking Series");
+  Serial.println("Multitasking: Toggle+LEDs");
+  Serial.println("By Harwell Mejia");
+  Serial.println("\nSystem: OFF");
+  digitalWrite(greenPin, systemState);
+  digitalWrite(redPin, !systemState);
+}
+
+void loop(){
+  //=== Task 1 - setup the toggle switch ===
+  //1.1- Reading the electrical signal
+  int currentSwitchRead = digitalRead(switchPin);
+  
+  //1.2- Reading electric change
+  if(currentSwitchRead != lastSwitchRead){
+    bounceSwitchTime = millis();
+    lastSwitchRead = currentSwitchRead;
+  }
+  
+  //1.3 - Check debounce time
+  if(millis() - bounceSwitchTime >= switchDebounceDelay){
+    
+    //1.4 - Detect stable state
+    if(currentSwitchRead != switchStableState){
+      switchStableState = currentSwitchRead;
+      
+      //1.5 - Valid button Press
+      if(switchStableState == LOW){
+        //Turning the system ON/OFF
+        systemState = !systemState;
+        digitalWrite(greenPin, systemState);
+        digitalWrite(redPin, !systemState);
+        Serial.print("System: ");
+        Serial.println(systemState? "ON":"OFF");
+      }
+    }
+  }
+}
