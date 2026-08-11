@@ -1,0 +1,143 @@
+/*
+Project: 06b- Non-blocking Programming:  Multitasking 
+				ToggleSwitch + toggleFadeLED
+Author: Harwell Mejia 
+Tutor: GEMINI
+Feature: 
+	- Non-blocking toggle
+    - LEDs to detremine system state (ON/OFF)
+Hardware:
+	- Arduino UNO
+    - Push button x 3
+    - LEDs x 3
+Software:
+Arduino (C++) - Run and simulated in ThinkerCad
+Date:2026/08/11*/
+
+#define	switchPin 2
+#define	addPin 3
+#define	subsPin 4
+#define	bluePin 5
+#define	redPin 6
+#define	greenPin 7
+
+//==Global parameters==
+int systemState = LOW;
+int Brightness = 0;
+long fadeAmount = 10;
+
+//=== Last reading state ===
+int lastSwitchRead = HIGH;
+int lastAddRead = HIGH;
+int lastSubsRead = HIGH;
+
+//===Stable button state ===
+int stableSwitchState = HIGH;
+int stableAddState = HIGH;
+int stableSubsState = HIGH;
+
+//=== Non-blocking timer parameters ===
+const unsigned long switchDebounceTime = 50;
+const unsigned long addDebounceTime = 50;
+const unsigned long subsDebounceTime = 50;
+
+unsigned long lastSwitchBounceTime = 0;
+unsigned long lastAddBounceTime = 0;
+unsigned long lastSubsBounceTime = 0;
+
+void setup(){
+  Serial.begin(115200);
+  pinMode(switchPin, INPUT_PULLUP);
+  pinMode(addPin, INPUT_PULLUP);
+  pinMode(subsPin, INPUT_PULLUP);
+  pinMode(bluePin, OUTPUT);
+  pinMode(redPin, OUTPUT);
+  pinMode(greenPin, OUTPUT);
+  
+  Serial.println("\nWelcome to Arduino - Non-blocking programing Series");
+  Serial.println("Asysnchronous Multitasking: Toggleswitch + togglefade LED");
+  Serial.println("Harwell Mejia");
+  Serial.println("System: OFF");
+  digitalWrite(greenPin, systemState);
+  digitalWrite(redPin, !systemState);
+}
+
+void loop(){
+  //===== TOGGLE SWITCH SECTION =====
+  //=== Task 1 - Reading electrical signal
+  int currentSwitchRead = digitalRead(switchPin);
+  
+  //== Task 2 - Detect electric reading
+  if(currentSwitchRead != lastSwitchRead){
+    lastSwitchRead = currentSwitchRead;
+    lastSwitchBounceTime = millis();
+  }
+  //== Task 3 - Check debounce time ===
+  if(millis() - lastSwitchBounceTime >= switchDebounceTime){
+    //== Task 4 - Detect stable State ==
+    if(currentSwitchRead != stableSwitchState){
+      stableSwitchState = currentSwitchRead;
+      //== Task 5 - Valid state == 
+      if(stableSwitchState == LOW){
+        systemState = !systemState;
+        digitalWrite(greenPin, systemState);
+        digitalWrite(redPin, !systemState);
+        Serial.print("System: ");
+        Serial.println(systemState? "ON":"OFF");
+        
+        //Re-start data when system is OFF
+        if(systemState == LOW){
+          Brightness = 0;
+          analogWrite(bluePin, 0);
+        }
+      }
+    }
+  }
+  //When system is ON
+  if(systemState == HIGH){
+    
+    // Activate the fade LED
+    analogWrite(bluePin, Brightness);
+    
+    //======== TOGGLE FADE BUTTON SECTION ============  
+    //== Task 1 - Reading electrical signal == 
+    int currentAddRead = digitalRead(addPin);
+	int currentSubsRead = digitalRead(subsPin);
+    
+    //== Task 2 - Electric reading ==
+    if(currentAddRead != lastAddRead){
+      lastAddRead = currentAddRead;
+      lastAddBounceTime = millis();
+    }
+    //== Task 3 - Check debounce time
+    if(millis() - lastAddBounceTime >= addDebounceTime){
+      //==Tas 4 - Detect stable state
+      if(currentAddRead != stableAddState){
+        stableAddState = currentAddRead;
+        if(stableAddState == LOW){
+          Brightness = constrain(Brightness + fadeAmount, 0, 255);
+          Serial.print("Brightness: ");
+          Serial.println(Brightness);
+        }
+      }
+    }
+    //== Task 2 - electric reading
+    if(currentSubsRead != lastSubsRead){
+      lastSubsRead = currentSubsRead;
+      lastSubsBounceTime = millis();
+    }
+    //== Task 3 - Check debounce time == 
+    if(millis() - lastSubsBounceTime >= subsDebounceTime){
+      //== Task 4 - Detect stable state == 
+      if(currentSubsRead != stableSubsState){
+        stableSubsState = currentSubsRead;
+        //== Valid toggle button ==
+        if(stableSubsState == LOW){
+          Brightness = constrain(Brightness - fadeAmount, 0, 255);
+          Serial.print("Brightness: ");
+          Serial.println(Brightness);
+        }
+      }
+    }
+  }
+}
