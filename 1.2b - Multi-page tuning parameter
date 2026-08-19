@@ -1,0 +1,201 @@
+/*
+Project: 
+Sub-Chapter 2.2c - Multi-page tunning parameter 
+Feature:
+LCD menu refresh with navigator push button, and parameter's tunnig
+push button for multy- page of the menu
+Important:
+This code is centralized in the toggle push button for UP/DOWN
+parameter tunning
+Author: Harwell Mejia
+Tutor: GEMINI and ChatGPT
+Hardware:
+- Arduino UNO
+- LCD 16x2 I2C
+- Push button x3
+Compiled and run in ThinkerCad
+*/
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+#define BTN_NAV 2
+#define BTN_UP 4
+#define BTN_DOWN 3
+
+//==State variables==
+bool isPageChanged = true; //For navigator toggle
+int currentPage = 0;
+const int totalPages = 3;
+
+//==flag to triger lcd redraw==
+bool isValueChanged = false;
+
+int currentTemp = 50; //Temperature displayed when LCD turn on
+const int minTempSet = 35;
+const int maxTempSet = 60;
+
+int currentHum = 40;	//Humidity displayed when LCD turn on
+const int minHumSet = 30;
+const int maxHumSet = 50;
+
+int currentMotSpeed = 0;
+const int minMotSpSet = 0;
+const int maxMotSpSet = 255; //Voltage parameter
+
+//==Non-blocking timer parameters
+bool lastNAVRead = HIGH;
+bool stableNAVState = HIGH;
+unsigned long navBounceTime = 0;
+const unsigned long navDebounceDelay = 50;
+
+bool lastUPRead = HIGH;
+bool stableUPState = HIGH;
+unsigned long upBounceTime = 0;
+
+bool lastDOWNRead = HIGH;
+bool stableDOWNState = HIGH;
+unsigned long downBounceTime = 0;
+
+const unsigned long tunningDebounceDelay = 50;
+
+void setup(){
+  Serial.begin(115200);
+  pinMode(BTN_NAV, INPUT_PULLUP);
+  pinMode(BTN_UP, INPUT_PULLUP);
+  pinMode(BTN_DOWN, INPUT_PULLUP);
+  
+  lcd.init();
+  lcd.backlight();
+}
+
+void loop(){
+  //===TASK 1 - Non-blocking timer for NAVIGATOR Menu button
+  bool currentNAVRead = digitalRead(BTN_NAV);
+  if(currentNAVRead != lastNAVRead){
+    lastNAVRead = currentNAVRead;
+    navBounceTime = millis();
+  }
+  unsigned long currentNAVTime = millis();
+  if(currentNAVTime - navBounceTime >= navDebounceDelay){
+    if(currentNAVRead != stableNAVState){
+      stableNAVState = currentNAVRead;
+      if(stableNAVState == LOW){
+        isPageChanged = true;
+        currentPage = (currentPage + 1) % totalPages;
+        Serial.print("Page n.: ");
+        Serial.println(currentPage);
+      }// Close press validation
+    }//Close stable state block
+  }//Close Debounce time checking block
+  
+  
+  //=================================================================
+  //===Task 2 - UP Button **Centralized debounce**
+  bool currentUPRead = digitalRead(BTN_UP);
+  if(currentUPRead != lastUPRead){
+    lastUPRead = currentUPRead;
+    upBounceTime = millis();
+  }
+  
+  if(millis() - upBounceTime >= tunningDebounceDelay){
+    if(currentUPRead != stableUPState){
+      stableUPState = currentUPRead;
+      
+      if(stableUPState == LOW){
+        isValueChanged = true;
+        
+        switch(currentPage){
+          case 0:
+          currentTemp = constrain(currentTemp + 1, minTempSet, maxTempSet);
+          Serial.print("Set Temperature: ");
+          Serial.println(currentTemp);
+          break;
+          
+          case 1:
+          currentHum = constrain(currentHum + 5, minHumSet, maxHumSet);
+          Serial.print("Set Humidity: ");
+          Serial.println(currentHum);
+          break;
+          
+          case 2: 
+          currentMotSpeed = constrain(currentMotSpeed + 10, minMotSpSet, maxMotSpSet);
+          Serial.print("Set Speed: ");
+          Serial.println(currentMotSpeed);
+          break;
+          
+        }//Close switch
+      }
+    }
+  }
+  //===Task 3 - DOWN Button **Centralized debounce**
+  bool currentDOWNRead = digitalRead(BTN_DOWN);
+  if(currentDOWNRead != lastDOWNRead){
+    lastDOWNRead = currentDOWNRead;
+    downBounceTime = millis();
+  }
+  
+  if(millis() - downBounceTime >= tunningDebounceDelay){
+    if(currentDOWNRead != stableDOWNState){
+      stableDOWNState = currentDOWNRead;
+      
+      if(stableDOWNState == LOW){
+        isValueChanged = true;
+        
+        switch(currentPage){
+          case 0:
+          currentTemp = constrain(currentTemp - 1, minTempSet, maxTempSet);
+          Serial.print("Set Temperature: ");
+          Serial.println(currentTemp);
+          break;
+          
+          case 1:
+          currentHum = constrain(currentHum - 5, minHumSet, maxHumSet);
+          Serial.print("Set Humidity: ");
+          Serial.println(currentHum);
+          break;
+          
+          case 2: 
+          currentMotSpeed = constrain(currentMotSpeed - 10, minMotSpSet, maxMotSpSet);
+          Serial.print("Set Speed: ");
+          Serial.print(currentMotSpeed);
+          break;
+        }
+      }
+    }
+  }
+  //=================================================================
+  //Task 4 - Render LCD
+  
+  if(isPageChanged || isValueChanged){
+    isPageChanged = false;
+    isValueChanged = false;
+    lcd.clear();
+    
+    switch(currentPage){
+      case 0:
+      lcd.setCursor(0,0);
+      lcd.print("Set Temp:");
+      lcd.setCursor(5,1);
+      lcd.print(currentTemp);
+      break;
+      
+      case 1:
+      lcd.setCursor(0,0);
+      lcd.print("Set Humidity:");
+      lcd.setCursor(5,1);
+      lcd.print(currentHum);
+      lcd.print("%");
+      break;
+      
+      case 2:
+      lcd.setCursor(0,0);
+      lcd.print("Set Speed: ");
+      lcd.setCursor(5,1);
+      lcd.print(currentMotSpeed);
+      lcd.print("PWM");
+      break;
+    }
+  }
+}
